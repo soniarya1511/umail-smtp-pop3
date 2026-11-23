@@ -1,0 +1,150 @@
+{% extends 'main/base.html' %}
+{% load static humanize %}
+
+{% block content %}
+
+<div class="container-fluid">
+<div class="row">
+    <div class="col-md-3 col-lg-2 p-3 " style = "background-color:rgba(219, 219, 219, 0.7);">
+        <div class="container">
+            <div class="image-container">
+                <img src="{% static 'images/profile.png' %}" class="user-image" alt="User Image">
+            </div>
+        </div>
+        <div class="card mb-4 shadow-sm bg-white border-0">
+            <div class="card-body p-3">
+                <h3 class="card-title text-success fw-bold mb-2">Welcome</h3>
+                <p class="card-text text-dark">{{ cn.email }}</p>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm bg-white border-0">
+            <div class="card-body p-3">
+                <h3 class="card-title text-success fw-bold mb-2">Connected To SMTP</h3>
+                <p class="card-text text-dark">Host: {{ cn.servers.smtp_host }}</p>
+                <p class="card-text text-muted">Port: {{ cn.smtp_port }}</p>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm bg-white border-0">
+            <div class="card-body p-3">
+                <h3 class="card-title text-success fw-bold mb-2">Connected To POP3</h3>
+                <p class="card-text text-dark">Host: {{ cn.servers.pop3_host }}</p>
+                <p class="card-text text-muted">Port: {{ cn.servers.pop3_port }}</p>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm bg-white border-0">
+            <div class="card-body p-3">
+                <h3 class="card-title text-success fw-bold mb-2">POP3 STAT</h3>
+                <p class="card-text text-dark">Number of mails: {{ count }}<br>Size of mailbox: {{ size }} octets</p>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-lg btn-primary mx-5" data-bs-toggle="modal" data-bs-target="#sendMailModal">
+            Compose Email
+        </button>
+    </div>       
+    <div class="col-md-8 col-lg-9 email-sidebar p-3" style="background-color:transparent;">
+            <h1 class="text-center mb-4 fw-bold text-cg1-1">Emails</h1>
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+            {% if not cn.box %}<p class="text-center text-muted">Your inbox is empty.</p>{% endif %}
+                <div class="accordion" id="emailAccordion">
+                    {% for id, email in cn.box.items %}
+                        <div class="accordion-item my-4">
+                            <h2 class="accordion-header" id="heading{{ id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ id }}" aria-expanded="false" aria-controls="collapse{{ id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">{{ email.sender }}</h6>
+                                            <p class="mb-0 text-muted small">Subject: {{ email.subject }}</p>
+                                            <p class="text-muted small mb-0">{{ email.timestamp|naturaltime }}</p>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ id }}" data-bs-parent="#emailAccordion">
+                                <div class="accordion-body">
+                                    <div class="email-content-container">
+                                        <h6 class="email-sender">From: {{ email.sender }}</h6>
+                                        <p class="email-subject">Subject: {{ email.subject }}</p>
+                                        <p class="email-content">{{ email.body|linebreaks }}</p>
+                                        <div class="email-timestamp">Received: {{ email.timestamp|naturaltime }}</div>
+                                    </div>
+                                
+                                    <form method="POST" action="{% url 'delete_email' id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger delete-button">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sendMailModal" tabindex="-1" aria-labelledby="sendMailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sendMailModalLabel">Compose Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sendMailForm" method="POST" action="{% url 'send_email' %}">
+                        {% csrf_token %}
+                        <!-- Recipient input -->
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="recipient" name="recipient" placeholder="Recipient Email" required>
+                            <label for="recipient">Recipient Email</label>
+                        </div>
+                        <!-- Subject input -->
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="subject" name="subject" placeholder="Subject" required>
+                            <label for="subject">Subject</label>
+                        </div>
+                        <!-- Message input -->
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="message" name="message" placeholder="Message" rows="5" required></textarea>
+                            <label for="message">Message</label>
+                        </div>
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Send Email</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.getElementById("sendMailForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent form from reloading the page
+
+    let formData = new FormData(this);
+
+    fetch("{% url 'send_email' %}", {
+        method: "POST",
+        headers: {"X-Requested-With": "fetch"},
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert("✅ Email sent successfully!");
+            document.getElementById("sendMailForm").reset();
+            window.location.reload();
+        } else {
+            alert("❌ Failed to send email: " + data.error);
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+
+</script>
+{% endblock content %}

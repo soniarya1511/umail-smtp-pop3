@@ -1,0 +1,135 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<header class="text-white py-5">
+    <div class="container px-4 px-lg-5 hero">
+        <div class="row gx-4 gx-lg-5 align-items-center justify-content-center">
+            <div class="col-lg-8 col-xl-7 col-xxl-6">
+                <div class="m-5 text-center text-xl-start">
+                    <h1 class="display-4 fw-bold mb-3" style="font-size: 80px; line-height: 1.1;">
+                        Your Ultimate<br>Email Solution
+                    </h1>
+                    <p class="lead fw-normal mb-4 text-dark" style="font-size: 20px;">
+                        Experience seamless email communication with UMAIL. Designed for speed, security, and reliability, UMAIL lets you send and receive emails effortlessly between SwiftMail and PostHawk servers. Powered by Docker and custom-built SMTP & POP3 services, our platform ensures smooth and efficient email delivery.
+                    </p>
+                    <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xl-start">
+                        <a class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'login' %}">Get Started</a>
+                        <a class="btn btn-outline-dark btn-lg px-4" href="#scroll-target">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center">
+                <img src="https://plus.unsplash.com/premium_photo-1682309526815-efe5d6225117?q=80&w=2112&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Email Interface" class="img-fluid shadow-lg rounded" style="max-height: 600px;">
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container px-4 px-lg-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bolder text-dark">How UMAIL Works – A Smarter Email System</h2>
+            <p class="lead fw-normal text-muted">UMAIL is more than just an email client—it’s an advanced Mail User Agent (MUA) that directly communicates with your SMTP and POP3 servers via secure socket connections.</p>
+        </div>
+        <div class="row gx-4 gx-lg-5 text-center">
+            <div class="col-md-4 mb-5">
+                <div class="card h-100 border-0 shadow-sm section-bg">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="fw-bold mt-3">SMTP Support</h3>
+                        <p class="text-muted">Send emails via SwiftMail & PostHawk servers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-5">
+                <div class="card h-100 border-0 shadow-sm section-bg">
+                    <div class="card-body">
+                        <i class="bi bi-robot text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="fw-bold mt-3">POP3 Access</h3>
+                        <p class="text-muted">Retrieve emails securely.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-5">
+                <div class="card h-100 border-0 shadow-sm section-bg">
+                    <div class="card-body">
+                        <i class="bi bi-shield-lock text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="fw-bold mt-3">Reverse DNS & MX Records</h3>
+                        <p class="text-muted">Ensures reliable email delivery and authentication.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container px-5 my-1">
+        <div class="row gx-5 align-items-center">
+            <div class="col-lg-6">
+                <img class="img-fluid rounded mb-5 mb-lg-0 shadow-lg" src="https://yastatic.net/s3/psf/ps-tuning/bed9cc69879f91deffd3.webp" alt="Our Founding" />
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bolder">Connect, Send, and Receive with UMAIL</h2>
+                <p class="lead fw-normal text-dark mb-0">
+                    UMAIL integrates seamlessly with mail.swiftmail.com and mail.posthawk.com for reliable email communication. The system operates using three Docker containers, ensuring isolation, security, and smooth performance.
+		    <br>
+		    🔹 Your Emails, Your Control<br>
+		    📨 Send and receive emails securely using our MUA-Django web client.<br>
+		    🔗 Communicate directly with your email servers via custom socket connections.<br>
+		    🔧 Built with reverse DNS and MX records, ensuring proper email routing & authentication.<br>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section: Growth -->
+<section class="py-5">
+    <div class="container px-5 my-1">
+        <div class="row gx-5 align-items-center">
+            <div class="col-lg-6 order-first order-lg-last">
+                <img class="img-fluid rounded mb-5 mb-lg-0 shadow-lg" src="https://yastatic.net/s3/psf/ps-tuning/b3dbae4d92c38cd2f723.webp" alt="Growth & Beyond" />
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bolder">
+		    Built for Developers & Email Enthusiasts
+		</h2>
+                <p class="lead fw-normal text-dark mb-0 text-lg">
+        Unlike traditional email clients, UMAIL is engineered for those who want full control over their email communication.
+		    <br>
+ Tech Stack & Architecture
+		    <br>
+	🔹	    Mail Servers: SwiftMail & PostHawk (Docker-based SMTP & POP3)<br>
+		🔹    DNS Server: Custom dnsmasq setup for MX & reverse DNS<br>
+		 🔹   Communication: Direct socket-based interaction between servers and UMAIL<br>
+		  🔹  Frontend: Built with Django for a smooth webmail experience<br>       
+		</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container px-5 my-1">
+        <div class="row gx-5 align-items-center">
+            <div class="col-lg-6">
+                <img class="img-fluid rounded mb-5 mb-lg-0 shadow-lg" src="https://yastatic.net/s3/psf/ps-tuning/f606b8f8ceeba029abea.webp" alt="Our Founding" />
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bolder">Why Choose UMAIL?</h2>
+                <p class="lead fw-normal text-dark mb-0">
+		    🔐 Secure & Private – Your emails are handled within a self-hosted, containerized environment.<br>
+		    ⚡ Optimized Performance – With reverse DNS and MX records, email authentication and routing are seamless.<br>
+
+		    Start using UMAIL today and experience a powerful, developer-friendly email system!<br>
+		</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

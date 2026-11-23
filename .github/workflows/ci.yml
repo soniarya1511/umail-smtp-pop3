@@ -1,0 +1,41 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Unit tests
+        working-directory: mailserver
+        run: |
+          pip install -r requirements.txt pytest
+          python -m pytest -q
+
+      - name: Django checks
+        working-directory: webmail
+        env:
+          DJANGO_DEBUG: "1"
+        run: |
+          pip install -r requirements.txt
+          python manage.py check
+
+      - name: Start the stack
+        run: |
+          echo "DJANGO_SECRET_KEY=ci-only-$(openssl rand -hex 16)" > .env
+          docker compose up -d --build --wait
+
+      - name: End-to-end smoke test
+        run: |
+          docker run --rm --network umail_mailnet --dns 172.28.0.2 \
+            -v ./scripts:/scripts:ro --entrypoint python umail/mailserver /scripts/smoke_test.py
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs

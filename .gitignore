@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+webmail/staticfiles/
+# Original 2025 code kept locally for reference only (contains a committed
+# Django SECRET_KEY, a db.sqlite3 with a user row and the submission archives).
+legacy/
+AGENTS.md

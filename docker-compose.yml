@@ -1,0 +1,127 @@
+# umail: two mail domains, a DNS server, a database and a webmail client,
+# each in its own Alpine container on one private bridge network.
+#
+#   dns              172.28.0.2   dnsmasq: A, PTR, MX and SRV records
+#   db               172.28.0.3   PostgreSQL, one database per domain
+#   smtp-posthawk    172.28.0.10  mail.posthawk.com   SMTP 578 + 25, outbox worker
+#   pop3-posthawk    172.28.0.11  pop.posthawk.com    POP3 995
+#   smtp-swiftmail   172.28.0.20  mail.swiftmail.com  SMTP 578 + 25, outbox worker
+#   pop3-swiftmail   172.28.0.21  pop.swiftmail.com   POP3 995
+#   webmail          172.28.0.30  umail.mua.com       Django, published on localhost:8000
+#
+# IPs are fixed because trust is DNS based (A + PTR must match the peer IP).
+
+name: umail
+
+x-mailserver: &mailserver
+  build: ./mailserver
+  image: umail/mailserver
+  restart: unless-stopped
+  depends_on:
+    db: { condition: service_healthy }
+    dns: { condition: service_healthy }
+  sysctls:
+    net.ipv4.ip_unprivileged_port_start: 0   # lets the non-root user bind port 25
+
+x-mail-env: &mail-env
+  DNS_SERVER: 172.28.0.2
+  IDLE_TIMEOUT: 180
+  OUTBOX_INTERVAL: 10
+
+services:
+  dns:
+    build: ./infra/dns
+    image: umail/dns
+    restart: unless-stopped
+    networks:
+      mailnet: { ipv4_address: 172.28.0.2 }
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-umail}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-umail}
+      MAIL_DOMAINS: posthawk.com swiftmail.com
+      TRUSTED_MUA: umail.mua.com
+      MAIL_USERS: ${MAIL_USERS:-alice@posthawk.com:alice123 bob@posthawk.com:bob123 charlie@swiftmail.com:charlie123}
+    volumes:
+      - ./infra/db/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+      - ./infra/db/schema.sql:/schema/schema.sql:ro
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d swiftmail"]
+      interval: 3s
+      retries: 20
+    networks:
+      mailnet: { ipv4_address: 172.28.0.3 }
+
+  smtp-posthawk:
+    <<: *mailserver
+    command: ["smtp"]
+    environment:
+      <<: *mail-env
+      MAIL_DOMAIN: posthawk.com
+      MAIL_HOSTNAME: mail.posthawk.com
+      DATABASE_URL: postgresql://${POSTGRES_USER:-umail}:${POSTGRES_PASSWORD:-umail}@db/posthawk
+    networks:
+      mailnet: { ipv4_address: 172.28.0.10 }
+
+  pop3-posthawk:
+    <<: *mailserver
+    command: ["pop3"]
+    environment:
+      <<: *mail-env
+      MAIL_DOMAIN: posthawk.com
+      MAIL_HOSTNAME: pop.posthawk.com
+      DATABASE_URL: postgresql://${POSTGRES_USER:-umail}:${POSTGRES_PASSWORD:-umail}@db/posthawk
+    networks:
+      mailnet: { ipv4_address: 172.28.0.11 }
+
+  smtp-swiftmail:
+    <<: *mailserver
+    command: ["smtp"]
+    environment:
+      <<: *mail-env
+      MAIL_DOMAIN: swiftmail.com
+      MAIL_HOSTNAME: mail.swiftmail.com
+      DATABASE_URL: postgresql://${POSTGRES_USER:-umail}:${POSTGRES_PASSWORD:-umail}@db/swiftmail
+    networks:
+      mailnet: { ipv4_address: 172.28.0.20 }
+
+  pop3-swiftmail:
+    <<: *mailserver
+    command: ["pop3"]
+    environment:
+      <<: *mail-env
+      MAIL_DOMAIN: swiftmail.com
+      MAIL_HOSTNAME: pop.swiftmail.com
+      DATABASE_URL: postgresql://${POSTGRES_USER:-umail}:${POSTGRES_PASSWORD:-umail}@db/swiftmail
+    networks:
+      mailnet: { ipv4_address: 172.28.0.21 }
+
+  webmail:
+    build: ./webmail
+    image: umail/webmail
+    restart: unless-stopped
+    depends_on: [smtp-posthawk, pop3-posthawk, smtp-swiftmail, pop3-swiftmail]
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in .env (see .env.example)}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-0}
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      MAIL_DNS_SERVER: 172.28.0.2
+      MUA_HOSTNAME: umail.mua.com
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      mailnet: { ipv4_address: 172.28.0.30 }
+
+networks:
+  mailnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  db-data:

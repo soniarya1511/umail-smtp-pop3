@@ -1,0 +1,28 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
+  <div class="container px-3">
+    <a class="navbar-brand fw-bold fs-4" href="{% url 'home'%}">
+            <img src="{% static 'images/mail.png' %}" style="max-height:40px;" class="my-0 mr-5" alt="Your Logo">
+            Umail
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ms-auto mb-0">
+                <li class="nav-item"><a class="nav-link px-3" href="{% url 'home'%}">Home</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="{% url 'home' %}">About</a></li>
+                    {% if 'cn_email' in request.session %}
+                        <li class="nav-item">
+                            <a class="nav-link px-3 btn btn-outline-danger text-white mx-5" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link px-3 btn btn-outline-success text-white mx-5" href="{% url 'login' %}">Login</a>
+                        </li>
+                    {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

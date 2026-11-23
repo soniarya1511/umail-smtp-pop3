@@ -1,0 +1,37 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="login-container">
+        <div class="login-header">
+            <h1 style="color:green">Sign In</h1>
+            <p>Sign in with your email credentials</p>
+        </div>
+        <form id="contactForm" method="POST" action="">
+            {% csrf_token %}
+            <!-- Email address input -->
+            <div class="form-floating mb-4">
+                <input class="form-control" id="email" name="email" type="email" placeholder="name@example.com" required />
+                <label for="email">Email address</label>
+                <div class="invalid-feedback">An email is required and must be valid.</div>
+            </div>
+            <!-- Password input -->
+            <div class="form-floating mb-4">
+                <input class="form-control" id="password" name="password" type="password" placeholder="Enter your password..." required />
+                <label for="password">Password</label>
+                <div class="invalid-feedback">Password is required.</div>
+            </div>
+            <!-- Submit Button -->
+            <div class="d-grid">
+                <button class="btn btn-success" type="submit">Login</button>
+            </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mt-3">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </form>
+    </div>
+    {% endblock content %}
